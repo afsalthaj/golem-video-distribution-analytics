@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use bindings::Guest;
 
 use chrono::Utc;
-use crate::bindings::{Event, EventType};
+use crate::bindings::{Event, EventDetails, EventType};
 
 
 struct Component;
@@ -87,8 +87,13 @@ impl Guest for Component {
         })
     }
 
-    fn get_latest_time_of(event_type: EventType) -> String {
-        format!("The latest time of event type {:?} is at {}", event_type, Utc::now().to_rfc3339())
+    fn get_latest_time_of(event_type: EventType) -> EventDetails {
+        EventDetails {
+            event_type,
+            timestamp: Utc::now().to_rfc3339(),
+            movie_name: "matrix".to_string(),
+            device_type: "ios".to_string(),
+        }
     }
 }
 
