@@ -223,6 +223,74 @@ pub unsafe fn __post_return_get_total_play_time_of_movie<T: Guest>(arg0: *mut u8
         }
     }
 }
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn _export_add_event_cabi<T: Guest>(
+    arg0: *mut u8,
+    arg1: usize,
+    arg2: *mut u8,
+    arg3: usize,
+    arg4: *mut u8,
+    arg5: usize,
+    arg6: *mut u8,
+    arg7: usize,
+) -> *mut u8 {
+    #[cfg(target_arch = "wasm32")]
+    _rt::run_ctors_once();
+    let len0 = arg1;
+    let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
+    let len1 = arg3;
+    let bytes1 = _rt::Vec::from_raw_parts(arg2.cast(), len1, len1);
+    let len2 = arg5;
+    let bytes2 = _rt::Vec::from_raw_parts(arg4.cast(), len2, len2);
+    let len3 = arg7;
+    let bytes3 = _rt::Vec::from_raw_parts(arg6.cast(), len3, len3);
+    let result4 = T::add_event(Event {
+        event_type: _rt::string_lift(bytes0),
+        movie_name: _rt::string_lift(bytes1),
+        device_type: _rt::string_lift(bytes2),
+        timestamp: _rt::string_lift(bytes3),
+    });
+    let ptr5 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+    match result4 {
+        Ok(e) => {
+            *ptr5.add(0).cast::<u8>() = (0i32) as u8;
+            let vec6 = (e.into_bytes()).into_boxed_slice();
+            let ptr6 = vec6.as_ptr().cast::<u8>();
+            let len6 = vec6.len();
+            ::core::mem::forget(vec6);
+            *ptr5.add(8).cast::<usize>() = len6;
+            *ptr5.add(4).cast::<*mut u8>() = ptr6.cast_mut();
+        }
+        Err(e) => {
+            *ptr5.add(0).cast::<u8>() = (1i32) as u8;
+            let vec7 = (e.into_bytes()).into_boxed_slice();
+            let ptr7 = vec7.as_ptr().cast::<u8>();
+            let len7 = vec7.len();
+            ::core::mem::forget(vec7);
+            *ptr5.add(8).cast::<usize>() = len7;
+            *ptr5.add(4).cast::<*mut u8>() = ptr7.cast_mut();
+        }
+    };
+    ptr5
+}
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn __post_return_add_event<T: Guest>(arg0: *mut u8) {
+    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+    match l0 {
+        0 => {
+            let l1 = *arg0.add(4).cast::<*mut u8>();
+            let l2 = *arg0.add(8).cast::<usize>();
+            _rt::cabi_dealloc(l1, l2, 1);
+        }
+        _ => {
+            let l3 = *arg0.add(4).cast::<*mut u8>();
+            let l4 = *arg0.add(8).cast::<usize>();
+            _rt::cabi_dealloc(l3, l4, 1);
+        }
+    }
+}
 pub trait Guest {
     fn get_latest_event_timestamp(event_type: _rt::String, user_id: u64) -> _rt::String;
     fn get_player_state(device_type: _rt::String) -> _rt::String;
@@ -232,6 +300,7 @@ pub trait Guest {
         device_type: _rt::String,
         movie_name: _rt::String,
     ) -> Result<Option<u64>, _rt::String>;
+    fn add_event(event_info: Event) -> Result<_rt::String, _rt::String>;
 }
 #[doc(hidden)]
 
@@ -277,6 +346,14 @@ macro_rules! __export_world_example_cabi{
     #[export_name = "cabi_post_get-total-play-time-of-movie"]
     unsafe extern "C" fn _post_return_get_total_play_time_of_movie(arg0: *mut u8,) {
       $($path_to_types)*::__post_return_get_total_play_time_of_movie::<$ty>(arg0)
+    }
+    #[export_name = "add-event"]
+    unsafe extern "C" fn export_add_event(arg0: *mut u8,arg1: usize,arg2: *mut u8,arg3: usize,arg4: *mut u8,arg5: usize,arg6: *mut u8,arg7: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_add_event_cabi::<$ty>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
+    }
+    #[export_name = "cabi_post_add-event"]
+    unsafe extern "C" fn _post_return_add_event(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_add_event::<$ty>(arg0)
     }
   };);
 }
@@ -370,17 +447,18 @@ pub(crate) use __export_example_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.25.0:example:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 508] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xfe\x02\x01A\x02\x01\
-A\x0f\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 545] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xa3\x03\x01A\x02\x01\
+A\x12\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
 \x05event\x03\0\0\x01@\x02\x0aevent-types\x07user-idw\0s\x04\0\x1aget-latest-eve\
 nt-timestamp\x01\x02\x01@\x01\x0bdevice-types\0s\x04\0\x10get-player-state\x01\x03\
 \x01@\x01\x0bdevice-types\0\x01\x04\0\x18get-latest-event-details\x01\x04\x01j\x01\
 w\x01s\x01@\x01\x0bdevice-types\0\x05\x04\0\x13get-total-play-time\x01\x06\x01kw\
 \x01j\x01\x07\x01s\x01@\x02\x0bdevice-types\x0amovie-names\0\x08\x04\0\x1cget-to\
-tal-play-time-of-movie\x01\x09\x04\x01.component:video-distribution-analytics/ex\
-ample\x04\0\x0b\x0d\x01\0\x07example\x03\0\0\0G\x09producers\x01\x0cprocessed-by\
-\x02\x0dwit-component\x070.208.1\x10wit-bindgen-rust\x060.25.0";
+tal-play-time-of-movie\x01\x09\x01j\x01s\x01s\x01@\x01\x0aevent-info\x01\0\x0a\x04\
+\0\x09add-event\x01\x0b\x04\x01.component:video-distribution-analytics/example\x04\
+\0\x0b\x0d\x01\0\x07example\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dw\
+it-component\x070.208.1\x10wit-bindgen-rust\x060.25.0";
 
 #[inline(never)]
 #[doc(hidden)]

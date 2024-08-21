@@ -1,6 +1,7 @@
 #[allow(warnings)]
 mod bindings;
 
+use std::cell::RefCell;
 use bindings::Guest;
 
 use chrono::Utc;
@@ -8,6 +9,23 @@ use crate::bindings::Event;
 
 
 struct Component;
+
+struct EventAccumulator {
+    events: Vec<Event>
+}
+
+thread_local! {
+    static EVENT_ACCUMULATOR: RefCell<EventAccumulator> = RefCell::new(EventAccumulator {
+        events: vec![],
+    });
+}
+
+fn with_new_event<T>(
+    f: impl FnOnce(&mut EventAccumulator) -> Result<T, String>,
+) -> Result<T, String> {
+    EVENT_ACCUMULATOR.with_borrow_mut(|state| f(state))
+}
+
 
 impl Guest for Component {
     fn get_latest_event_timestamp(event_type: String, user_id: u64) -> String {
@@ -29,7 +47,7 @@ impl Guest for Component {
     }
 
     fn get_total_play_time(device_type: String) -> Result<u64, String> {
-        if device_type == "ios"  {
+        if device_type == "ios" {
             Ok(120)
         } else if device_type == "android" {
             Ok(100)
@@ -56,6 +74,17 @@ impl Guest for Component {
             }
             _ => Err("Device type not supported".to_string())
         }
+    }
+
+    fn add_event(event: Event) -> Result<String, String> {
+        with_new_event(|state| {
+            if event.device_type == "ios" || event.device_type == "android" {
+                state.events.push(event);
+                Ok("Event added successfully".to_string())
+            } else {
+                Err("Invalid event. Device type not supported".to_string())
+            }
+        })
     }
 }
 
