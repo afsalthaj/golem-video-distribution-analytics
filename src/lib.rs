@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use bindings::Guest;
 
 use chrono::Utc;
-use crate::bindings::Event;
+use crate::bindings::{Event, EventType};
 
 
 struct Component;
@@ -85,6 +85,10 @@ impl Guest for Component {
                 Err("Invalid event. Device type not supported".to_string())
             }
         })
+    }
+
+    fn get_latest_time_of(event_type: EventType) -> String {
+        format!("The latest time of event type {:?} is at {}", event_type, Utc::now().to_rfc3339())
     }
 }
 

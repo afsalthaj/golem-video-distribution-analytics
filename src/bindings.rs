@@ -17,6 +17,21 @@ impl ::core::fmt::Debug for Event {
             .finish()
     }
 }
+#[derive(Clone, Copy)]
+pub enum EventType {
+    Buffer,
+    Play,
+    Pause,
+}
+impl ::core::fmt::Debug for EventType {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        match self {
+            EventType::Buffer => f.debug_tuple("EventType::Buffer").finish(),
+            EventType::Play => f.debug_tuple("EventType::Play").finish(),
+            EventType::Pause => f.debug_tuple("EventType::Pause").finish(),
+        }
+    }
+}
 #[doc(hidden)]
 #[allow(non_snake_case)]
 pub unsafe fn _export_get_latest_event_timestamp_cabi<T: Guest>(
@@ -291,6 +306,36 @@ pub unsafe fn __post_return_add_event<T: Guest>(arg0: *mut u8) {
         }
     }
 }
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn _export_get_latest_time_of_cabi<T: Guest>(arg0: i32) -> *mut u8 {
+    #[cfg(target_arch = "wasm32")]
+    _rt::run_ctors_once();
+    let v0 = match arg0 {
+        0 => EventType::Buffer,
+        1 => EventType::Play,
+        n => {
+            debug_assert_eq!(n, 2, "invalid enum discriminant");
+            EventType::Pause
+        }
+    };
+    let result1 = T::get_latest_time_of(v0);
+    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+    let vec3 = (result1.into_bytes()).into_boxed_slice();
+    let ptr3 = vec3.as_ptr().cast::<u8>();
+    let len3 = vec3.len();
+    ::core::mem::forget(vec3);
+    *ptr2.add(4).cast::<usize>() = len3;
+    *ptr2.add(0).cast::<*mut u8>() = ptr3.cast_mut();
+    ptr2
+}
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn __post_return_get_latest_time_of<T: Guest>(arg0: *mut u8) {
+    let l0 = *arg0.add(0).cast::<*mut u8>();
+    let l1 = *arg0.add(4).cast::<usize>();
+    _rt::cabi_dealloc(l0, l1, 1);
+}
 pub trait Guest {
     fn get_latest_event_timestamp(event_type: _rt::String, user_id: u64) -> _rt::String;
     fn get_player_state(device_type: _rt::String) -> _rt::String;
@@ -301,6 +346,7 @@ pub trait Guest {
         movie_name: _rt::String,
     ) -> Result<Option<u64>, _rt::String>;
     fn add_event(event_info: Event) -> Result<_rt::String, _rt::String>;
+    fn get_latest_time_of(event_type: EventType) -> _rt::String;
 }
 #[doc(hidden)]
 
@@ -354,6 +400,14 @@ macro_rules! __export_world_example_cabi{
     #[export_name = "cabi_post_add-event"]
     unsafe extern "C" fn _post_return_add_event(arg0: *mut u8,) {
       $($path_to_types)*::__post_return_add_event::<$ty>(arg0)
+    }
+    #[export_name = "get-latest-time-of"]
+    unsafe extern "C" fn export_get_latest_time_of(arg0: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_get_latest_time_of_cabi::<$ty>(arg0)
+    }
+    #[export_name = "cabi_post_get-latest-time-of"]
+    unsafe extern "C" fn _post_return_get_latest_time_of(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_get_latest_time_of::<$ty>(arg0)
     }
   };);
 }
@@ -447,18 +501,20 @@ pub(crate) use __export_example_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.25.0:example:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 545] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xa3\x03\x01A\x02\x01\
-A\x12\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
-\x05event\x03\0\0\x01@\x02\x0aevent-types\x07user-idw\0s\x04\0\x1aget-latest-eve\
-nt-timestamp\x01\x02\x01@\x01\x0bdevice-types\0s\x04\0\x10get-player-state\x01\x03\
-\x01@\x01\x0bdevice-types\0\x01\x04\0\x18get-latest-event-details\x01\x04\x01j\x01\
-w\x01s\x01@\x01\x0bdevice-types\0\x05\x04\0\x13get-total-play-time\x01\x06\x01kw\
-\x01j\x01\x07\x01s\x01@\x02\x0bdevice-types\x0amovie-names\0\x08\x04\0\x1cget-to\
-tal-play-time-of-movie\x01\x09\x01j\x01s\x01s\x01@\x01\x0aevent-info\x01\0\x0a\x04\
-\0\x09add-event\x01\x0b\x04\x01.component:video-distribution-analytics/example\x04\
-\0\x0b\x0d\x01\0\x07example\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dw\
-it-component\x070.208.1\x10wit-bindgen-rust\x060.25.0";
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 628] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xf6\x03\x01A\x02\x01\
+A\x16\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
+\x05event\x03\0\0\x01q\x03\x06buffer\0\0\x04play\0\0\x05pause\0\0\x03\0\x0aevent\
+-type\x03\0\x02\x01@\x02\x0aevent-types\x07user-idw\0s\x04\0\x1aget-latest-event\
+-timestamp\x01\x04\x01@\x01\x0bdevice-types\0s\x04\0\x10get-player-state\x01\x05\
+\x01@\x01\x0bdevice-types\0\x01\x04\0\x18get-latest-event-details\x01\x06\x01j\x01\
+w\x01s\x01@\x01\x0bdevice-types\0\x07\x04\0\x13get-total-play-time\x01\x08\x01kw\
+\x01j\x01\x09\x01s\x01@\x02\x0bdevice-types\x0amovie-names\0\x0a\x04\0\x1cget-to\
+tal-play-time-of-movie\x01\x0b\x01j\x01s\x01s\x01@\x01\x0aevent-info\x01\0\x0c\x04\
+\0\x09add-event\x01\x0d\x01@\x01\x0aevent-type\x03\0s\x04\0\x12get-latest-time-o\
+f\x01\x0e\x04\x01.component:video-distribution-analytics/example\x04\0\x0b\x0d\x01\
+\0\x07example\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x07\
+0.208.1\x10wit-bindgen-rust\x060.25.0";
 
 #[inline(never)]
 #[doc(hidden)]
