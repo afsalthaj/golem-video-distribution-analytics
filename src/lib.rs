@@ -27,6 +27,36 @@ impl Guest for Component {
             timestamp: Utc::now().to_rfc3339(),
         }
     }
+
+    fn get_total_play_time(device_type: String) -> Result<u64, String> {
+        if device_type == "ios"  {
+            Ok(120)
+        } else if device_type == "android" {
+            Ok(100)
+        } else {
+            Err("Device type not supported".to_string())
+        }
+    }
+
+    fn get_total_play_time_of_movie(device_type: String, movie_name: String) -> Result<Option<u64>, String> {
+        match device_type.as_str() {
+            "ios" => {
+                match movie_name.as_str() {
+                    "matrix" => Ok(Some(120)),
+                    "darknight" => Ok(Some(130)),
+                    _ => Ok(None),
+                }
+            }
+            "android" => {
+                match movie_name.as_str() {
+                    "matrix" => Ok(Some(100)),
+                    "darknight" => Ok(Some(110)),
+                    _ => Ok(None),
+                }
+            }
+            _ => Err("Device type not supported".to_string())
+        }
+    }
 }
 
 bindings::export!(Component with_types_in bindings);

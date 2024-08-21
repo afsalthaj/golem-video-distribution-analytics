@@ -129,10 +129,109 @@ pub unsafe fn __post_return_get_latest_event_details<T: Guest>(arg0: *mut u8) {
     let l7 = *arg0.add(28).cast::<usize>();
     _rt::cabi_dealloc(l6, l7, 1);
 }
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn _export_get_total_play_time_cabi<T: Guest>(arg0: *mut u8, arg1: usize) -> *mut u8 {
+    #[cfg(target_arch = "wasm32")]
+    _rt::run_ctors_once();
+    let len0 = arg1;
+    let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
+    let result1 = T::get_total_play_time(_rt::string_lift(bytes0));
+    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+    match result1 {
+        Ok(e) => {
+            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+            *ptr2.add(8).cast::<i64>() = _rt::as_i64(e);
+        }
+        Err(e) => {
+            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+            let vec3 = (e.into_bytes()).into_boxed_slice();
+            let ptr3 = vec3.as_ptr().cast::<u8>();
+            let len3 = vec3.len();
+            ::core::mem::forget(vec3);
+            *ptr2.add(12).cast::<usize>() = len3;
+            *ptr2.add(8).cast::<*mut u8>() = ptr3.cast_mut();
+        }
+    };
+    ptr2
+}
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn __post_return_get_total_play_time<T: Guest>(arg0: *mut u8) {
+    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+    match l0 {
+        0 => (),
+        _ => {
+            let l1 = *arg0.add(8).cast::<*mut u8>();
+            let l2 = *arg0.add(12).cast::<usize>();
+            _rt::cabi_dealloc(l1, l2, 1);
+        }
+    }
+}
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn _export_get_total_play_time_of_movie_cabi<T: Guest>(
+    arg0: *mut u8,
+    arg1: usize,
+    arg2: *mut u8,
+    arg3: usize,
+) -> *mut u8 {
+    #[cfg(target_arch = "wasm32")]
+    _rt::run_ctors_once();
+    let len0 = arg1;
+    let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
+    let len1 = arg3;
+    let bytes1 = _rt::Vec::from_raw_parts(arg2.cast(), len1, len1);
+    let result2 =
+        T::get_total_play_time_of_movie(_rt::string_lift(bytes0), _rt::string_lift(bytes1));
+    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+    match result2 {
+        Ok(e) => {
+            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
+            match e {
+                Some(e) => {
+                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
+                    *ptr3.add(16).cast::<i64>() = _rt::as_i64(e);
+                }
+                None => {
+                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
+                }
+            };
+        }
+        Err(e) => {
+            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
+            let vec4 = (e.into_bytes()).into_boxed_slice();
+            let ptr4 = vec4.as_ptr().cast::<u8>();
+            let len4 = vec4.len();
+            ::core::mem::forget(vec4);
+            *ptr3.add(12).cast::<usize>() = len4;
+            *ptr3.add(8).cast::<*mut u8>() = ptr4.cast_mut();
+        }
+    };
+    ptr3
+}
+#[doc(hidden)]
+#[allow(non_snake_case)]
+pub unsafe fn __post_return_get_total_play_time_of_movie<T: Guest>(arg0: *mut u8) {
+    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+    match l0 {
+        0 => (),
+        _ => {
+            let l1 = *arg0.add(8).cast::<*mut u8>();
+            let l2 = *arg0.add(12).cast::<usize>();
+            _rt::cabi_dealloc(l1, l2, 1);
+        }
+    }
+}
 pub trait Guest {
     fn get_latest_event_timestamp(event_type: _rt::String, user_id: u64) -> _rt::String;
     fn get_player_state(device_type: _rt::String) -> _rt::String;
     fn get_latest_event_details(device_type: _rt::String) -> Event;
+    fn get_total_play_time(device_type: _rt::String) -> Result<u64, _rt::String>;
+    fn get_total_play_time_of_movie(
+        device_type: _rt::String,
+        movie_name: _rt::String,
+    ) -> Result<Option<u64>, _rt::String>;
 }
 #[doc(hidden)]
 
@@ -163,11 +262,27 @@ macro_rules! __export_world_example_cabi{
     unsafe extern "C" fn _post_return_get_latest_event_details(arg0: *mut u8,) {
       $($path_to_types)*::__post_return_get_latest_event_details::<$ty>(arg0)
     }
+    #[export_name = "get-total-play-time"]
+    unsafe extern "C" fn export_get_total_play_time(arg0: *mut u8,arg1: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_get_total_play_time_cabi::<$ty>(arg0, arg1)
+    }
+    #[export_name = "cabi_post_get-total-play-time"]
+    unsafe extern "C" fn _post_return_get_total_play_time(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_get_total_play_time::<$ty>(arg0)
+    }
+    #[export_name = "get-total-play-time-of-movie"]
+    unsafe extern "C" fn export_get_total_play_time_of_movie(arg0: *mut u8,arg1: usize,arg2: *mut u8,arg3: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_get_total_play_time_of_movie_cabi::<$ty>(arg0, arg1, arg2, arg3)
+    }
+    #[export_name = "cabi_post_get-total-play-time-of-movie"]
+    unsafe extern "C" fn _post_return_get_total_play_time_of_movie(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_get_total_play_time_of_movie::<$ty>(arg0)
+    }
   };);
 }
 #[doc(hidden)]
 pub(crate) use __export_world_example_cabi;
-#[repr(align(4))]
+#[repr(align(8))]
 struct _RetArea([::core::mem::MaybeUninit<u8>; 32]);
 static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 32]);
 mod _rt {
@@ -191,6 +306,34 @@ mod _rt {
         }
         let layout = alloc::Layout::from_size_align_unchecked(size, align);
         alloc::dealloc(ptr as *mut u8, layout);
+    }
+
+    pub fn as_i64<T: AsI64>(t: T) -> i64 {
+        t.as_i64()
+    }
+
+    pub trait AsI64 {
+        fn as_i64(self) -> i64;
+    }
+
+    impl<'a, T: Copy + AsI64> AsI64 for &'a T {
+        fn as_i64(self) -> i64 {
+            (*self).as_i64()
+        }
+    }
+
+    impl AsI64 for i64 {
+        #[inline]
+        fn as_i64(self) -> i64 {
+            self as i64
+        }
+    }
+
+    impl AsI64 for u64 {
+        #[inline]
+        fn as_i64(self) -> i64 {
+            self as i64
+        }
     }
     extern crate alloc as alloc_crate;
     pub use alloc_crate::alloc;
@@ -227,15 +370,17 @@ pub(crate) use __export_example_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.25.0:example:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 388] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x86\x02\x01A\x02\x01\
-A\x08\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 508] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xfe\x02\x01A\x02\x01\
+A\x0f\x01r\x04\x0aevent-types\x0amovie-names\x0bdevice-types\x09timestamps\x03\0\
 \x05event\x03\0\0\x01@\x02\x0aevent-types\x07user-idw\0s\x04\0\x1aget-latest-eve\
 nt-timestamp\x01\x02\x01@\x01\x0bdevice-types\0s\x04\0\x10get-player-state\x01\x03\
-\x01@\x01\x0bdevice-types\0\x01\x04\0\x18get-latest-event-details\x01\x04\x04\x01\
-.component:video-distribution-analytics/example\x04\0\x0b\x0d\x01\0\x07example\x03\
-\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x070.208.1\x10wit-\
-bindgen-rust\x060.25.0";
+\x01@\x01\x0bdevice-types\0\x01\x04\0\x18get-latest-event-details\x01\x04\x01j\x01\
+w\x01s\x01@\x01\x0bdevice-types\0\x05\x04\0\x13get-total-play-time\x01\x06\x01kw\
+\x01j\x01\x07\x01s\x01@\x02\x0bdevice-types\x0amovie-names\0\x08\x04\0\x1cget-to\
+tal-play-time-of-movie\x01\x09\x04\x01.component:video-distribution-analytics/ex\
+ample\x04\0\x0b\x0d\x01\0\x07example\x03\0\0\0G\x09producers\x01\x0cprocessed-by\
+\x02\x0dwit-component\x070.208.1\x10wit-bindgen-rust\x060.25.0";
 
 #[inline(never)]
 #[doc(hidden)]
