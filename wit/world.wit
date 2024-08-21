@@ -1,0 +1,17 @@
+package component:video-distribution-analytics;
+
+/// An example world for the component to target.
+world example {
+    record event {
+        event-type: string,
+        movie-name: string,
+        device-type: string,
+        timestamp: string
+    }
+
+    export get-latest-event-timestamp: func(event-type: string, user-id: u64) -> string;
+    export get-player-state: func(device-type: string) -> string;
+    export get-latest-event-details: func(device-type: string) -> event;
+    export get-total-play-time: func(device-type: string) -> result<u64, string>;
+    export get-total-play-time-of-movie: func(device-type: string, movie-name: string) -> result<option<u64>, string>;
+}
