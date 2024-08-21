@@ -2,12 +2,27 @@ package component:video-distribution-analytics;
 
 /// An example world for the component to target.
 world example {
+    record connection {
+      id: u64
+    }
+
     record event {
         event-type: string,
         movie-name: string,
         device-type: string,
         timestamp: string
     }
+
+     record insert-params {
+        after: string,
+        value: string
+      }
+
+     variant change {
+        added(string),
+        deleted(string),
+        inserted(insert-params)
+      }
 
     variant event-type {
         buffer,
@@ -28,5 +43,9 @@ world example {
     export get-total-play-time: func(device-type: string) -> result<u64, string>;
     export get-total-play-time-of-movie: func(device-type: string, movie-name: string) -> result<option<u64>, string>;
     export add-event: func(event-info: event) -> result<string, string>;
-    export get-latest-time-of: func(event-type: event-type) -> event-details;
+    export get-latest-time-of: func(device-id: string) -> event-details;
+    export unit-function: func() -> string;
+    export poll: func(c: connection) -> list<change>;
+    export add: func(c: connection, value: string);
+    export noop: func();
 }

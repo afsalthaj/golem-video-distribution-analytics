@@ -5,7 +5,7 @@ use std::cell::RefCell;
 use bindings::Guest;
 
 use chrono::Utc;
-use crate::bindings::{Event, EventDetails, EventType};
+use crate::bindings::{Change, Connection, Event, EventDetails, EventType, InsertParams};
 
 
 struct Component;
@@ -87,13 +87,35 @@ impl Guest for Component {
         })
     }
 
-    fn get_latest_time_of(event_type: EventType) -> EventDetails {
+    fn get_latest_time_of(event_type: String) -> EventDetails {
         EventDetails {
-            event_type,
+            event_type: EventType::Buffer,
             timestamp: Utc::now().to_rfc3339(),
             movie_name: "matrix".to_string(),
             device_type: "ios".to_string(),
         }
+    }
+
+    fn unit_function() -> String {
+        "This function doesn't do anything".to_string()
+    }
+
+    fn poll(c: Connection) -> Vec<Change> {
+        let added = Change::Added("added".to_string());
+        let removed = Change::Deleted("removed".to_string());
+        let inserted = Change::Inserted(InsertParams {
+            after: "inserted".to_string(),
+            value: "hello".to_string(),
+        });
+        vec![added, removed, inserted]
+    }
+
+    fn add(c: Connection, value: String) {
+        dbg!(c, value);
+    }
+
+    fn noop() {
+        dbg!("noop");
     }
 }
 
